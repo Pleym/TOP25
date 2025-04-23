@@ -5,9 +5,11 @@
 #   LR : A column‑major (Left), B row‑major (Right)
 #   LL : A column‑major (Left), B column‑major (Left)
 # Each build is generated in its own directory (build-rr, build-rl, …).
-# Usage: ./build_all.sh [--gemm] [--block [BS]]
+# Usage: ./build_all.sh [--gemm] [--block [BS]] [--jobs|-j [N]] [--clean]
 #   --gemm         : only GEMM build (skip naive)
 #   --block [SIZE] : also build/cache‑blocked kernel with optional block size (default 32)
+#   --jobs|-j [N]  : limit compile parallelism to N (default half of cpu cores)
+#   --clean        : remove build directories unconditionally
 
 set -euo pipefail
 
@@ -21,6 +23,8 @@ COMBOS=(
 GEMM_ONLY=false
 BUILD_BLOCK=false
 BLOCK_SIZE=32
+JOBS="auto"          # use all/half cores unless overridden
+CLEAN_BUILD=false
 
 # ---------------- parse CLI ----------------
 while [[ $# -gt 0 ]]; do
@@ -35,9 +39,22 @@ while [[ $# -gt 0 ]]; do
         BLOCK_SIZE=$1
         shift
       fi ;;
+    --jobs|-j)
+      shift
+      JOBS=${1:?"--jobs requires a number"}
+      shift ;;
+    --clean)
+      CLEAN_BUILD=true ; shift ;;
     *) echo "Unknown option: $1"; exit 1 ;;
   esac
 done
+
+# determine default parallelism
+if [[ $JOBS == auto ]]; then
+  total=$(sysctl -n hw.ncpu 2>/dev/null || nproc || echo 4)
+  JOBS=$(( total/2 ))
+  (( JOBS<1 )) && JOBS=1
+fi
 
 for combo in "${COMBOS[@]}"; do
   read -r TAG LA LB <<< "$combo"
@@ -45,10 +62,11 @@ for combo in "${COMBOS[@]}"; do
   # ---------- GEMM build ----------
   BUILD_DIR="build-${TAG,,}" 
   echo "=== Building GEMM $TAG (A=$LA, B=$LB) ==="
+  $CLEAN_BUILD && rm -rf "$BUILD_DIR"
   cmake -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release \
         -DKokkos_ENABLE_OPENMP=ON \
         -DCMAKE_CXX_FLAGS="-DLAYOUT_A=$LA -DLAYOUT_B=$LB"
-  cmake --build "$BUILD_DIR" -j
+  cmake --build "$BUILD_DIR" --parallel "$JOBS"
   echo
 
   # Run benchmark for GEMM
@@ -64,10 +82,11 @@ for combo in "${COMBOS[@]}"; do
   if ! $GEMM_ONLY; then
     BUILD_DIR_N="build-${TAG,,}-naive"
     echo "=== Building NAIVE $TAG (A=$LA, B=$LB) ==="
+    $CLEAN_BUILD && rm -rf "$BUILD_DIR_N"
     cmake -B "$BUILD_DIR_N" -DCMAKE_BUILD_TYPE=Release \
           -DKokkos_ENABLE_OPENMP=ON \
           -DCMAKE_CXX_FLAGS="-DUSE_NAIVE -DLAYOUT_A=$LA -DLAYOUT_B=$LB"
-    cmake --build "$BUILD_DIR_N" -j
+    cmake --build "$BUILD_DIR_N" --parallel "$JOBS"
     echo
 
     CSV_N="results_${TAG}_naive.csv"
@@ -85,10 +104,11 @@ for combo in "${COMBOS[@]}"; do
     BS=${BLOCK_SIZE:-32}
     BUILD_DIR_B="build-${TAG,,}-blocked"
     echo "=== Building BLOCKED $TAG (A=$LA, B=$LB, BS=$BS) ==="
+    $CLEAN_BUILD && rm -rf "$BUILD_DIR_B"
     cmake -B "$BUILD_DIR_B" -DCMAKE_BUILD_TYPE=Release \
           -DKokkos_ENABLE_OPENMP=ON \
           -DCMAKE_CXX_FLAGS="-DUSE_BLOCK -DLAYOUT_A=$LA -DLAYOUT_B=$LB -DBLOCK_SIZE=$BS"
-    cmake --build "$BUILD_DIR_B" -j
+    cmake --build "$BUILD_DIR_B" --parallel "$JOBS"
     echo
 
     CSV_B="results_${TAG}_blocked.csv"
