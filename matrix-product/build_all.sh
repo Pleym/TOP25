@@ -26,7 +26,8 @@ BLOCK_SIZE=32
 while [[ $# -gt 0 ]]; do
   case $1 in
     --gemm)
-      GEMM_ONLY=true ;;
+      GEMM_ONLY=true 
+      shift;;
     --block)
       BUILD_BLOCK=true
       shift
@@ -44,6 +45,7 @@ for combo in "${COMBOS[@]}"; do
   # ---------- GEMM build ----------
   BUILD_DIR="build-${TAG,,}" 
   echo "=== Building GEMM $TAG (A=$LA, B=$LB) ==="
+  rm -rf "$BUILD_DIR"
   cmake -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Release \
         -DKokkos_ENABLE_OPENMP=ON \
         -DCMAKE_CXX_FLAGS="-DLAYOUT_A=$LA -DLAYOUT_B=$LB"
@@ -63,6 +65,7 @@ for combo in "${COMBOS[@]}"; do
   if ! $GEMM_ONLY; then
     BUILD_DIR_N="build-${TAG,,}-naive"
     echo "=== Building NAIVE $TAG (A=$LA, B=$LB) ==="
+    rm -rf "$BUILD_DIR_N"
     cmake -B "$BUILD_DIR_N" -DCMAKE_BUILD_TYPE=Release \
           -DKokkos_ENABLE_OPENMP=ON \
           -DCMAKE_CXX_FLAGS="-DUSE_NAIVE -DLAYOUT_A=$LA -DLAYOUT_B=$LB"
@@ -84,6 +87,7 @@ for combo in "${COMBOS[@]}"; do
     BS=${BLOCK_SIZE:-32}
     BUILD_DIR_B="build-${TAG,,}-blocked"
     echo "=== Building BLOCKED $TAG (A=$LA, B=$LB, BS=$BS) ==="
+    rm -rf "$BUILD_DIR_B"
     cmake -B "$BUILD_DIR_B" -DCMAKE_BUILD_TYPE=Release \
           -DKokkos_ENABLE_OPENMP=ON \
           -DCMAKE_CXX_FLAGS="-DUSE_BLOCK -DLAYOUT_A=$LA -DLAYOUT_B=$LB -DBLOCK_SIZE=$BS"

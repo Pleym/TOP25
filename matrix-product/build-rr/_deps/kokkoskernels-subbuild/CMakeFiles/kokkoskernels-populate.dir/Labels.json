@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/dorian/Documents/chps/TOP25/matrix-product/build-rr/_deps/kokkoskernels-subbuild/CMakeFiles/kokkoskernels-populate"
+		},
+		{
+			"file" : "/home/dorian/Documents/chps/TOP25/matrix-product/build-rr/_deps/kokkoskernels-subbuild/CMakeFiles/kokkoskernels-populate.rule"
+		},
+		{
+			"file" : "/home/dorian/Documents/chps/TOP25/matrix-product/build-rr/_deps/kokkoskernels-subbuild/CMakeFiles/kokkoskernels-populate-complete.rule"
+		},
+		{
+			"file" : "/home/dorian/Documents/chps/TOP25/matrix-product/build-rr/_deps/kokkoskernels-subbuild/kokkoskernels-populate-prefix/src/kokkoskernels-populate-stamp/kokkoskernels-populate-build.rule"
+		},
+		{
+			"file" : "/home/dorian/Documents/chps/TOP25/matrix-product/build-rr/_deps/kokkoskernels-subbuild/kokkoskernels-populate-prefix/src/kokkoskernels-populate-stamp/kokkoskernels-populate-configure.rule"
+		},
+		{
+			"file" : "/home/dorian/Documents/chps/TOP25/matrix-product/build-rr/_deps/kokkoskernels-subbuild/kokkoskernels-populate-prefix/src/kokkoskernels-populate-stamp/kokkoskernels-populate-download.rule"
+		},
+		{
+			"file" : "/home/dorian/Documents/chps/TOP25/matrix-product/build-rr/_deps/kokkoskernels-subbuild/kokkoskernels-populate-prefix/src/kokkoskernels-populate-stamp/kokkoskernels-populate-install.rule"
+		},
+		{
+			"file" : "/home/dorian/Documents/chps/TOP25/matrix-product/build-rr/_deps/kokkoskernels-subbuild/kokkoskernels-populate-prefix/src/kokkoskernels-populate-stamp/kokkoskernels-populate-mkdir.rule"
+		},
+		{
+			"file" : "/home/dorian/Documents/chps/TOP25/matrix-product/build-rr/_deps/kokkoskernels-subbuild/kokkoskernels-populate-prefix/src/kokkoskernels-populate-stamp/kokkoskernels-populate-patch.rule"
+		},
+		{
+			"file" : "/home/dorian/Documents/chps/TOP25/matrix-product/build-rr/_deps/kokkoskernels-subbuild/kokkoskernels-populate-prefix/src/kokkoskernels-populate-stamp/kokkoskernels-populate-test.rule"
+		},
+		{
+			"file" : "/home/dorian/Documents/chps/TOP25/matrix-product/build-rr/_deps/kokkoskernels-subbuild/kokkoskernels-populate-prefix/src/kokkoskernels-populate-stamp/kokkoskernels-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"kokkoskernels-populate"
+		],
+		"name" : "kokkoskernels-populate"
+	}
+}
