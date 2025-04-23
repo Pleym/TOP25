@@ -5,6 +5,7 @@
 #include <Kokkos_Core.hpp>
 #include <fmt/core.h>
 #include <fmt/chrono.h>
+#include <KokkosBlas.hpp>
 
 #ifndef LAYOUT_A
   #define LAYOUT_A Right
@@ -38,8 +39,9 @@ auto matrix_init(MatrixType& M) -> void {
   );
 }
 
+// Naive triple-loop kernel  command : -DUSE_NAIVE
 template <class AMatrixType, class BMatrixType, class CMatrixType>
-auto matrix_product(double alpha, AMatrixType const& A, BMatrixType const& B, double beta, CMatrixType& C) -> void {
+auto matrix_product_naive(double alpha, AMatrixType const& A, BMatrixType const& B, double beta, CMatrixType& C) -> void {
   static_assert(
     AMatrixType::rank() == 2 && BMatrixType::rank() == 2 && CMatrixType::rank() == 2, "Views must be of rank 2"
   );
@@ -62,6 +64,19 @@ auto matrix_product(double alpha, AMatrixType const& A, BMatrixType const& B, do
   );
 }
 
+// Optimised GEMM via KokkosBlas command : default 
+template <class AMatrixType, class BMatrixType, class CMatrixType>
+auto matrix_product_gemm(double alpha, AMatrixType const& A, BMatrixType const& B, double beta, CMatrixType& C) -> void {
+  static_assert(
+    AMatrixType::rank() == 2 && BMatrixType::rank() == 2 && CMatrixType::rank() == 2, "Views must be of rank 2"
+  );
+  assert(A.extent(0) == C.extent(0));
+  assert(B.extent(1) == C.extent(1));
+  assert(A.extent(1) == B.extent(0));
+
+  KokkosBlas::gemm("N", "N", alpha, A, B, beta, C);
+}
+
 auto main(int argc, char* argv[]) -> int {
   if (argc < 4) {
     fmt::print("Usage: {} <M> <N> <K>\n", argv[0]);
@@ -71,7 +86,6 @@ auto main(int argc, char* argv[]) -> int {
   int n = std::atoi(argv[2]);
   int k = std::atoi(argv[3]);
 
-  // Known seed for deterministic RNG
   srand48(42);
 
   Kokkos::initialize(argc, argv);
@@ -88,7 +102,11 @@ auto main(int argc, char* argv[]) -> int {
 
     Kokkos::fence();
     auto start = high_resolution_clock::now();
-    matrix_product(alpha, A, B, beta, C);
+#ifdef USE_NAIVE
+    matrix_product_naive(alpha, A, B, beta, C);
+#else
+    matrix_product_gemm(alpha, A, B, beta, C);
+#endif
     auto end = high_resolution_clock::now();
     Kokkos::fence();
     fmt::print("Time: {}\n", (end - start).count());
