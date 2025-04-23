@@ -13,8 +13,12 @@
   #define LAYOUT_B Left
 #endif
 
-using MatrixA = Kokkos::View<double**, Kokkos::Layout##LAYOUT_A>;
-using MatrixB = Kokkos::View<double**, Kokkos::Layout##LAYOUT_B>;
+// Macro to concatenate tokens after expansion
+#define concat_impl(a, b) a##b
+#define concat(a, b) concat_impl(a, b)
+
+using MatrixA = Kokkos::View<double**, concat(Kokkos::Layout, LAYOUT_A)>;
+using MatrixB = Kokkos::View<double**, concat(Kokkos::Layout, LAYOUT_B)>;
 using MatrixC = Kokkos::View<double**, Kokkos::LayoutRight>;
 
 using std::chrono::high_resolution_clock;

@@ -24,6 +24,15 @@ for combo in "${COMBOS[@]}"; do
         -DCMAKE_CXX_FLAGS="-DLAYOUT_A=$LA -DLAYOUT_B=$LB"
   cmake --build "$BUILD_DIR" -j
   echo
+
+  # --- Run benchmark and append results ---
+  M=${M:-2000} N=${N:-2000} K=${K:-2000}
+  CSV="results_${TAG}.csv"
+  echo "Running benchmark → $CSV"
+  python benchmark/measure_perf.py "$M" "$N" "$K" \
+         --exe "$BUILD_DIR/src/top.matrix_product" \
+         --csv "$CSV"
+  echo
 done
 
-echo "All builds completed."
+echo "All builds and benchmarks completed."
