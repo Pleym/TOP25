@@ -1,13 +1,23 @@
 #include <cassert>
 #include <cstdlib>
+#include <chrono>
 
 #include <Kokkos_Core.hpp>
 #include <fmt/core.h>
 #include <fmt/chrono.h>
 
+#ifndef LAYOUT_A
+  #define LAYOUT_A Right
+#endif
+#ifndef LAYOUT_B
+  #define LAYOUT_B Left
+#endif
+
+using MatrixA = Kokkos::View<double**, Kokkos::Layout##LAYOUT_A>;
+using MatrixB = Kokkos::View<double**, Kokkos::Layout##LAYOUT_B>;
+using MatrixC = Kokkos::View<double**, Kokkos::LayoutRight>;
 
 using std::chrono::high_resolution_clock;
-using Matrix = Kokkos::View<double**, Kokkos::LayoutRight>;
 
 template <class MatrixType>
 auto matrix_init(MatrixType& M) -> void {
@@ -62,10 +72,9 @@ auto main(int argc, char* argv[]) -> int {
 
   Kokkos::initialize(argc, argv);
   {
-    auto A = Matrix("A", m, k);
-    auto B = Matrix("B", k, n);
-    auto C = Matrix("C", m, n);
-
+    auto A = MatrixA("A", m, k);
+    auto B = MatrixB("B", k, n);
+    auto C = MatrixC("C", m, n);
 
     double alpha = drand48();
     matrix_init(A);
