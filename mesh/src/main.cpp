@@ -17,10 +17,11 @@ struct Cell {
   char name_abrev_; // 1
   uint16_t x_; // 2
   uint16_t y_; // 2
-  //int id_; // 4 
+  int id_; // 4 
   float pressure_; // 4
   double velocity_; // 8
   double acceleration_; // 8
+  CellType kind_; // 1
   
 
   static auto build(int32_t id, char name_abrev, uint16_t max_x, uint16_t max_y) -> Cell {

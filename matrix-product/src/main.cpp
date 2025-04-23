@@ -3,7 +3,10 @@
 
 #include <Kokkos_Core.hpp>
 #include <fmt/core.h>
+#include <fmt/chrono.h>
 
+
+using std::chrono::high_resolution_clock;
 using Matrix = Kokkos::View<double**, Kokkos::LayoutRight>;
 
 template <class MatrixType>
@@ -63,6 +66,7 @@ auto main(int argc, char* argv[]) -> int {
     auto B = Matrix("B", k, n);
     auto C = Matrix("C", m, n);
 
+
     double alpha = drand48();
     matrix_init(A);
     matrix_init(B);
@@ -70,9 +74,13 @@ auto main(int argc, char* argv[]) -> int {
     matrix_init(C);
 
     Kokkos::fence();
+    auto start = high_resolution_clock::now();
     matrix_product(alpha, A, B, beta, C);
+    auto end = high_resolution_clock::now();
     Kokkos::fence();
+    fmt::print("Time: {}\n", (end - start).count());
   }
+
   Kokkos::finalize();
   return 0;
 }
