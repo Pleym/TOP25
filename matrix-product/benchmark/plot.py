@@ -1,39 +1,63 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import argparse
+from pathlib import Path
 
-df = pd.read_csv("result.csv", names = ["date", "M", "N", "K", "threads", "time_s", "gflops"])
+parser = argparse.ArgumentParser(description="Plot performance from CSV files.")
+parser.add_argument("csv_files", nargs="+", help="CSV files to plot")
+args = parser.parse_args()
+csv_files = args.csv_files
 
+# extract tick values for thread counts
+tick_values = pd.read_csv(csv_files[0])["threads"].tolist()
 
 # --- GFLOP/s ---
 plt.figure()
-plt.plot(df.threads, df.gflops, marker="o")
+# compute max GFLOP/s across all CSVs for ylim
+max_val = 0.0
+for f in csv_files:
+    df = pd.read_csv(f)
+    label = Path(f).stem
+    plt.plot(df.threads, df.gflops, marker="o", label=label)
+    max_val = max(max_val, df.gflops.max())
 plt.xlabel("Threads")
 plt.ylabel("GFLOP/s")
-plt.ylim(0)
+plt.ylim(0, max(max_val, 0.4) * 1.1)
 plt.title("GFLOP/s per thread")
-plt.xscale("log",base=2)
+plt.xticks(tick_values)
+plt.axhline(0.4, color="gray", linestyle="--", label="0.4 GFLOP/s")
+plt.legend()
 plt.savefig("gflops.png")
 
 # --- Speedup ---
 
 # (with time)
 plt.figure()
-speedup = df.time_s.iloc[0] / df.time_s
-plt.plot(df.threads, speedup, marker="o")
+for f in csv_files:
+    df = pd.read_csv(f)
+    label = Path(f).stem
+    baseline = df.time_s.iloc[0]
+    speedup = baseline / df.time_s
+    plt.plot(df.threads, speedup, marker="o", label=label)
 plt.xlabel("Threads")
 plt.ylabel("Speedup")
 plt.ylim(0)
-plt.title("Speedup")
-plt.xscale("log",base=2)
+plt.title("Speedup (time)")
+plt.xticks(tick_values)
+plt.legend()
 plt.savefig("speedup_time.png")
 
 # (with gflops)
 plt.figure()
-speedup = df.gflops / df.gflops.iloc[0]
-plt.plot(df.threads, speedup, marker="o")
+for f in csv_files:
+    df = pd.read_csv(f)
+    label = Path(f).stem
+    speedup = df.gflops / df.gflops.iloc[0]
+    plt.plot(df.threads, speedup, marker="o", label=label)
 plt.xlabel("Threads")
 plt.ylabel("Speedup")
 plt.ylim(0)
-plt.title("Speedup")
-plt.xscale("log",base=2)
+plt.title("Speedup (GFLOPS)")
+plt.xticks(tick_values)
+plt.legend()
 plt.savefig("speedup_gflops.png")

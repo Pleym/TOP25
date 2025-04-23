@@ -26,7 +26,8 @@ BLOCK_SIZE=32
 while [[ $# -gt 0 ]]; do
   case $1 in
     --gemm)
-      GEMM_ONLY=true ;;
+      GEMM_ONLY=true
+      shift ;;
     --block)
       BUILD_BLOCK=true
       shift
