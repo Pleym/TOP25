@@ -14,6 +14,12 @@
   #define LAYOUT_B Left
 #endif
 
+// Block size
+#ifndef BLOCK_SIZE
+  #define BLOCK_SIZE 32
+#endif
+
+
 // Macro to concatenate tokens after expansion
 #define concat_impl(a, b) a##b
 #define concat(a, b) concat_impl(a, b)
@@ -102,16 +108,17 @@ auto main(int argc, char* argv[]) -> int {
 
     Kokkos::fence();
     auto start = high_resolution_clock::now();
-#ifdef USE_NAIVE
-    matrix_product_naive(alpha, A, B, beta, C);
-#else
-    matrix_product_gemm(alpha, A, B, beta, C);
-#endif
+    #ifdef USE_BLOCK // -DUSE_BLOCK
+      block_gemm<BLOCK_SIZE>(alpha, A, B, beta, C);
+    #elif defined(USE_NAIVE)
+      matrix_product_naive(alpha, A, B, beta, C);
+    #else // GEMM default
+      matrix_product_gemm(alpha, A, B, beta, C);
+    #endif
     auto end = high_resolution_clock::now();
     Kokkos::fence();
     fmt::print("Time: {}\n", (end - start).count());
   }
-
   Kokkos::finalize();
   return 0;
 }
